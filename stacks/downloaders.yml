@@ -1,0 +1,149 @@
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: always
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - WEBUI_PORT=8080
+    volumes:
+      - /home/docker/qbittorrent:/config
+      - /home/media/downloads:/downloads
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.homelab`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=web"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: always
+    ports:
+      - "9696:9696"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /home/docker/prowlarr:/config
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.homelab`)"
+      - "traefik.http.routers.prowlarr.entrypoints=web"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    restart: always
+    ports:
+      - "8191:8191"
+    environment:
+      - TZ=${TZ}
+    networks:
+      - bookstack
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: always
+    ports:
+      - "7878:7878"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /home/docker/radarr:/config
+      - /home/media/movies:/movies
+      - /home/media/downloads:/downloads
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.homelab`)"
+      - "traefik.http.routers.radarr.entrypoints=web"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: always
+    ports:
+      - "8989:8989"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /home/docker/sonarr:/config
+      - /home/media/tvshows:/tv
+      - /home/media/downloads:/downloads
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.homelab`)"
+      - "traefik.http.routers.sonarr.entrypoints=web"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    restart: always
+    ports:
+      - "8787:8787"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /home/docker/readarr:/config
+      - /home/media/books:/books
+      - /home/media/audiobooks:/audiobooks
+      - /home/media/downloads:/downloads
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.readarr.rule=Host(`readarr.homelab`)"
+      - "traefik.http.routers.readarr.entrypoints=web"
+      - "traefik.http.services.readarr.loadbalancer.server.port=8787"
+
+  shelfarr:
+    image: ghcr.io/shelfarr/shelfarr:latest
+    container_name: shelfarr
+    restart: always
+    ports:
+      - "8084:8084"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /home/docker/shelfarr:/config
+      - /home/media/books:/books
+      - /home/media/audiobooks:/audiobooks
+      - /home/media/downloads:/downloads
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.shelfarr.rule=Host(`shelfarr.homelab`)"
+      - "traefik.http.routers.shelfarr.entrypoints=web"
+      - "traefik.http.services.shelfarr.loadbalancer.server.port=8084"
+
+networks:
+  bookstack:
+    external: true

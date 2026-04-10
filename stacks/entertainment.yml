@@ -1,0 +1,26 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: always
+    ports:
+      - "8096:8096"
+      - "8920:8920"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - /home/docker/jellyfin/config:/config
+      - /home/docker/jellyfin/cache:/cache
+      - /home/media/movies:/data/movies
+      - /home/media/tvshows:/data/tvshows
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.homelab`)"
+      - "traefik.http.routers.jellyfin.entrypoints=web"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+
+networks:
+  bookstack:
+    external: true

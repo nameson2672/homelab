@@ -1,0 +1,125 @@
+name: Deploy Homelab Stacks
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed files
+        id: changes
+        run: |
+          CHANGED=$(git diff HEAD~1 --name-only)
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          deploy_portainer=false
+          deploy_network=false
+          deploy_media=false
+          deploy_downloaders=false
+          deploy_entertainment=false
+          run_folders=false
+
+          echo "$CHANGED" | grep -q "stacks/portainer.yml"     && deploy_portainer=true     || true
+          echo "$CHANGED" | grep -q "stacks/network.yml"       && deploy_network=true       || true
+          echo "$CHANGED" | grep -q "stacks/media.yml"         && deploy_media=true         || true
+          echo "$CHANGED" | grep -q "stacks/downloaders.yml"   && deploy_downloaders=true   || true
+          echo "$CHANGED" | grep -q "stacks/entertainment.yml" && deploy_entertainment=true || true
+          echo "$CHANGED" | grep -q "scripts/folders.sh"       && run_folders=true          || true
+
+          echo "deploy_portainer=$deploy_portainer"         >> "$GITHUB_OUTPUT"
+          echo "deploy_network=$deploy_network"             >> "$GITHUB_OUTPUT"
+          echo "deploy_media=$deploy_media"                 >> "$GITHUB_OUTPUT"
+          echo "deploy_downloaders=$deploy_downloaders"     >> "$GITHUB_OUTPUT"
+          echo "deploy_entertainment=$deploy_entertainment" >> "$GITHUB_OUTPUT"
+          echo "run_folders=$run_folders"                   >> "$GITHUB_OUTPUT"
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_PORTAINER: ${{ steps.changes.outputs.deploy_portainer }}
+          DEPLOY_NETWORK: ${{ steps.changes.outputs.deploy_network }}
+          DEPLOY_MEDIA: ${{ steps.changes.outputs.deploy_media }}
+          DEPLOY_DOWNLOADERS: ${{ steps.changes.outputs.deploy_downloaders }}
+          DEPLOY_ENTERTAINMENT: ${{ steps.changes.outputs.deploy_entertainment }}
+          RUN_FOLDERS: ${{ steps.changes.outputs.run_folders }}
+        run: |
+          ssh "$SERVER_USER@$SERVER_IP" bash << EOF
+            set -e
+            cd ~/homelab
+
+            echo "--- Pulling latest changes ---"
+            git pull origin main
+
+            deployed_any=false
+
+            if [ "$RUN_FOLDERS" = "true" ]; then
+              echo "--- Re-running folders.sh ---"
+              bash scripts/folders.sh
+            fi
+
+            if [ "$DEPLOY_PORTAINER" = "true" ]; then
+              echo "--- Redeploying portainer ---"
+              docker compose -f stacks/portainer.yml up -d
+              deployed_any=true
+            fi
+
+            if [ "$DEPLOY_NETWORK" = "true" ]; then
+              echo "--- Redeploying network ---"
+              docker compose -f stacks/network.yml up -d
+              deployed_any=true
+            fi
+
+            if [ "$DEPLOY_MEDIA" = "true" ]; then
+              echo "--- Redeploying media ---"
+              docker compose -f stacks/media.yml up -d
+              deployed_any=true
+            fi
+
+            if [ "$DEPLOY_DOWNLOADERS" = "true" ]; then
+              echo "--- Redeploying downloaders ---"
+              docker compose -f stacks/downloaders.yml up -d
+              deployed_any=true
+            fi
+
+            if [ "$DEPLOY_ENTERTAINMENT" = "true" ]; then
+              echo "--- Redeploying entertainment ---"
+              docker compose -f stacks/entertainment.yml up -d
+              deployed_any=true
+            fi
+
+            if [ "\$deployed_any" = "false" ]; then
+              echo "No stack changes detected, skipping redeploy"
+            else
+              echo "✅ Deployment complete"
+            fi
+          EOF
+
+      - name: Print deploy summary
+        run: |
+          echo "=== Deploy Summary ==="
+          echo "Portainer:     ${{ steps.changes.outputs.deploy_portainer }}"
+          echo "Network:       ${{ steps.changes.outputs.deploy_network }}"
+          echo "Media:         ${{ steps.changes.outputs.deploy_media }}"
+          echo "Downloaders:   ${{ steps.changes.outputs.deploy_downloaders }}"
+          echo "Entertainment: ${{ steps.changes.outputs.deploy_entertainment }}"
+          echo "folders.sh:    ${{ steps.changes.outputs.run_folders }}"

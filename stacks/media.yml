@@ -1,0 +1,45 @@
+services:
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    restart: always
+    ports:
+      - "13378:80"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /home/docker/audiobookshelf:/config
+      - /home/media/audiobooks:/audiobooks
+      - /home/media/books:/podcasts
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.homelab`)"
+      - "traefik.http.routers.audiobookshelf.entrypoints=web"
+      - "traefik.http.services.audiobookshelf.loadbalancer.server.port=80"
+
+  kavita:
+    image: jvmilazz0/kavita:latest
+    container_name: kavita
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - /home/docker/kavita:/kavita/config
+      - /home/media/books:/books
+    networks:
+      - bookstack
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kavita.rule=Host(`kavita.homelab`)"
+      - "traefik.http.routers.kavita.entrypoints=web"
+      - "traefik.http.services.kavita.loadbalancer.server.port=5000"
+
+networks:
+  bookstack:
+    external: true
