@@ -121,18 +121,18 @@ services:
       - "traefik.http.routers.readarr.entrypoints=web"
       - "traefik.http.services.readarr.loadbalancer.server.port=8787"
 
-  shelfarr:
-    image: ghcr.io/shelfarr/shelfarr:latest
-    container_name: shelfarr
+  lazylibrarian:
+    image: lscr.io/linuxserver/lazylibrarian:latest
+    container_name: lazylibrarian
     restart: always
     ports:
-      - "8084:8084"
+      - "5299:5299"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - /home/docker/shelfarr:/config
+      - /home/docker/lazylibrarian:/config
       - /home/media/books:/books
       - /home/media/audiobooks:/audiobooks
       - /home/media/downloads:/downloads
@@ -140,9 +140,9 @@ services:
       - bookstack
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.shelfarr.rule=Host(`shelfarr.homelab`)"
-      - "traefik.http.routers.shelfarr.entrypoints=web"
-      - "traefik.http.services.shelfarr.loadbalancer.server.port=8084"
+      - "traefik.http.routers.lazylibrarian.rule=Host(`lazylibrarian.homelab`)"
+      - "traefik.http.routers.lazylibrarian.entrypoints=web"
+      - "traefik.http.services.lazylibrarian.loadbalancer.server.port=5299"
 
 networks:
   bookstack:

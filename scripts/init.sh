@@ -33,23 +33,9 @@ else
   echo ".env already exists, skipping."
 fi
 
-# 5. Deploy Portainer
+# 5. Deploy stacks
 echo ""
-echo "--- Deploying Portainer ---"
-docker compose -f "$REPO_DIR/stacks/portainer.yml" up -d
-
-# 6. Wait 10 seconds with countdown
-echo ""
-echo "Waiting 10 seconds for Portainer to initialize..."
-for i in $(seq 10 -1 1); do
-  printf "\r  %d seconds remaining..." "$i"
-  sleep 1
-done
-printf "\r  Done waiting.               \n"
-
-# 7. Deploy remaining stacks
-echo ""
-echo "--- Deploying network stack ---"
+echo "--- Deploying network stack (Traefik + Pi-hole) ---"
 docker compose -f "$REPO_DIR/stacks/network.yml" up -d
 
 echo ""
@@ -64,27 +50,26 @@ echo ""
 echo "--- Deploying entertainment stack ---"
 docker compose -f "$REPO_DIR/stacks/entertainment.yml" up -d
 
-# 8. Auto-detect server IP
+# 6. Auto-detect server IP
 IP=$(hostname -I | awk '{print $1}')
 
-# 9. Print services table
+# 7. Print services table
 echo ""
 echo "==========================================="
 echo " HOMELAB SERVICES"
 echo "==========================================="
-printf " %-20s %s\n" "Portainer"        "https://${IP}:9443"
-printf " %-20s %s\n" "Traefik"          "http://${IP}:8080  → traefik.homelab"
-printf " %-20s %s\n" "Pi-hole"          "http://${IP}:8181  → pihole.homelab"
-printf " %-20s %s\n" "Jellyfin"         "http://${IP}:8096  → jellyfin.homelab"
-printf " %-20s %s\n" "Audiobookshelf"   "http://${IP}:13378 → audiobookshelf.homelab"
-printf " %-20s %s\n" "Kavita"           "http://${IP}:5000  → kavita.homelab"
-printf " %-20s %s\n" "qBittorrent"      "http://${IP}:8080  → qbittorrent.homelab"
-printf " %-20s %s\n" "Prowlarr"         "http://${IP}:9696  → prowlarr.homelab"
-printf " %-20s %s\n" "Radarr"           "http://${IP}:7878  → radarr.homelab"
-printf " %-20s %s\n" "Sonarr"           "http://${IP}:8989  → sonarr.homelab"
-printf " %-20s %s\n" "Readarr"          "http://${IP}:8787  → readarr.homelab"
-printf " %-20s %s\n" "Shelfarr"         "http://${IP}:8084  → shelfarr.homelab"
-printf " %-20s %s\n" "FlareSolverr"     "http://${IP}:8191"
+printf " %-22s %s\n" "Traefik Dashboard"  "http://${IP}:8080  → traefik.homelab"
+printf " %-22s %s\n" "Pi-hole"            "http://${IP}:8181  → pihole.homelab"
+printf " %-22s %s\n" "Jellyfin"           "http://${IP}:8096  → jellyfin.homelab"
+printf " %-22s %s\n" "Audiobookshelf"     "http://${IP}:13378 → audiobookshelf.homelab"
+printf " %-22s %s\n" "Kavita"             "http://${IP}:5000  → kavita.homelab"
+printf " %-22s %s\n" "qBittorrent"        "http://${IP}:8080  → qbittorrent.homelab"
+printf " %-22s %s\n" "Prowlarr"           "http://${IP}:9696  → prowlarr.homelab"
+printf " %-22s %s\n" "Radarr"             "http://${IP}:7878  → radarr.homelab"
+printf " %-22s %s\n" "Sonarr"             "http://${IP}:8989  → sonarr.homelab"
+printf " %-22s %s\n" "Readarr"            "http://${IP}:8787  → readarr.homelab"
+printf " %-22s %s\n" "LazyLibrarian"      "http://${IP}:5299  → lazylibrarian.homelab"
+printf " %-22s %s\n" "FlareSolverr"       "http://${IP}:8191"
 echo "==========================================="
 echo " After Pi-hole setup, set your router's"
 echo " DNS to ${IP} and add a wildcard DNS"

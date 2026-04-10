@@ -10,7 +10,6 @@ mkdir -p /home/media/downloads/complete
 mkdir -p /home/media/downloads/incomplete
 
 echo "Creating Docker config directories..."
-mkdir -p /home/docker/portainer
 mkdir -p /home/docker/traefik
 mkdir -p /home/docker/pihole/etc-pihole
 mkdir -p /home/docker/pihole/etc-dnsmasq.d
@@ -21,7 +20,7 @@ mkdir -p /home/docker/prowlarr
 mkdir -p /home/docker/radarr
 mkdir -p /home/docker/sonarr
 mkdir -p /home/docker/readarr
-mkdir -p /home/docker/shelfarr
+mkdir -p /home/docker/lazylibrarian
 mkdir -p /home/docker/jellyfin/config
 mkdir -p /home/docker/jellyfin/cache
 
