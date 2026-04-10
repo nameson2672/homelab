@@ -67,7 +67,6 @@ printf " %-22s %s\n" "qBittorrent"        "http://${IP}:8080  → qbittorrent.ho
 printf " %-22s %s\n" "Prowlarr"           "http://${IP}:9696  → prowlarr.homelab"
 printf " %-22s %s\n" "Radarr"             "http://${IP}:7878  → radarr.homelab"
 printf " %-22s %s\n" "Sonarr"             "http://${IP}:8989  → sonarr.homelab"
-printf " %-22s %s\n" "Readarr"            "http://${IP}:8787  → readarr.homelab"
 printf " %-22s %s\n" "LazyLibrarian"      "http://${IP}:5299  → lazylibrarian.homelab"
 printf " %-22s %s\n" "FlareSolverr"       "http://${IP}:8191"
 echo "==========================================="

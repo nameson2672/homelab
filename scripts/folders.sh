@@ -19,7 +19,6 @@ mkdir -p /home/docker/qbittorrent
 mkdir -p /home/docker/prowlarr
 mkdir -p /home/docker/radarr
 mkdir -p /home/docker/sonarr
-mkdir -p /home/docker/readarr
 mkdir -p /home/docker/lazylibrarian
 mkdir -p /home/docker/jellyfin/config
 mkdir -p /home/docker/jellyfin/cache

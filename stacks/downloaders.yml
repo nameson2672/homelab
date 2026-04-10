@@ -98,28 +98,6 @@ services:
       - "traefik.http.routers.sonarr.entrypoints=web"
       - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
 
-  readarr:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr
-    restart: always
-    ports:
-      - "8787:8787"
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    volumes:
-      - /home/docker/readarr:/config
-      - /home/media/books:/books
-      - /home/media/audiobooks:/audiobooks
-      - /home/media/downloads:/downloads
-    networks:
-      - bookstack
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.readarr.rule=Host(`readarr.homelab`)"
-      - "traefik.http.routers.readarr.entrypoints=web"
-      - "traefik.http.services.readarr.loadbalancer.server.port=8787"
 
   lazylibrarian:
     image: lscr.io/linuxserver/lazylibrarian:latest
