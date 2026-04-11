@@ -39,6 +39,11 @@ echo "--- Deploying network stack (Traefik + Pi-hole) ---"
 docker compose -f "$REPO_DIR/stacks/network.yml" up -d
 
 echo ""
+echo "--- Deploying homepage dashboard ---"
+cp -rn "$REPO_DIR/config/homepage/." /home/docker/homepage/ 2>/dev/null || true
+docker compose -f "$REPO_DIR/stacks/homepage.yml" up -d
+
+echo ""
 echo "--- Deploying media stack ---"
 docker compose -f "$REPO_DIR/stacks/media.yml" up -d
 
@@ -58,12 +63,13 @@ echo ""
 echo "==========================================="
 echo " HOMELAB SERVICES"
 echo "==========================================="
+printf " %-22s %s\n" "Homepage"           "http://${IP}:3000  → homepage.homelab"
 printf " %-22s %s\n" "Traefik Dashboard"  "http://${IP}:8080  → traefik.homelab"
 printf " %-22s %s\n" "Pi-hole"            "http://${IP}:8181  → pihole.homelab"
 printf " %-22s %s\n" "Jellyfin"           "http://${IP}:8096  → jellyfin.homelab"
 printf " %-22s %s\n" "Audiobookshelf"     "http://${IP}:13378 → audiobookshelf.homelab"
 printf " %-22s %s\n" "Kavita"             "http://${IP}:5000  → kavita.homelab"
-printf " %-22s %s\n" "qBittorrent"        "http://${IP}:8080  → qbittorrent.homelab"
+printf " %-22s %s\n" "qBittorrent"        "http://${IP}:8090  → qbittorrent.homelab"
 printf " %-22s %s\n" "Prowlarr"           "http://${IP}:9696  → prowlarr.homelab"
 printf " %-22s %s\n" "Radarr"             "http://${IP}:7878  → radarr.homelab"
 printf " %-22s %s\n" "Sonarr"             "http://${IP}:8989  → sonarr.homelab"

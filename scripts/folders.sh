@@ -22,6 +22,7 @@ mkdir -p /home/docker/sonarr
 mkdir -p /home/docker/lazylibrarian
 mkdir -p /home/docker/jellyfin/config
 mkdir -p /home/docker/jellyfin/cache
+mkdir -p /home/docker/homepage
 
 echo "Setting permissions..."
 sudo chown -R 1000:1000 /home/media

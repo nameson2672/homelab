@@ -18,7 +18,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.homelab`)"
-      - "traefik.http.routers.audiobookshelf.entrypoints=web"
+      - "traefik.http.routers.audiobookshelf.entrypoints=websecure"
+      - "traefik.http.routers.audiobookshelf.tls=true"
       - "traefik.http.services.audiobookshelf.loadbalancer.server.port=80"
 
   kavita:
@@ -37,7 +38,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.kavita.rule=Host(`kavita.homelab`)"
-      - "traefik.http.routers.kavita.entrypoints=web"
+      - "traefik.http.routers.kavita.entrypoints=websecure"
+      - "traefik.http.routers.kavita.tls=true"
       - "traefik.http.services.kavita.loadbalancer.server.port=5000"
 
 networks:
