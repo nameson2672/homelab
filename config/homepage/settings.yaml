@@ -1,0 +1,18 @@
+title: Homelab
+description: My Homelab Dashboard
+theme: dark
+color: slate
+headerStyle: clean
+layout:
+  Network:
+    style: row
+    columns: 2
+  Media:
+    style: row
+    columns: 3
+  Downloads:
+    style: row
+    columns: 3
+  Automation:
+    style: row
+    columns: 3
