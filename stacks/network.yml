@@ -16,6 +16,7 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
       - "--log.level=INFO"
+      - "--providers.file.filename=/etc/traefik/tls.yml"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /home/docker/traefik:/etc/traefik
