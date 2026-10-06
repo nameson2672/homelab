@@ -6,10 +6,10 @@
 # (template: config/applypack/applypack.env.example). Never commit that file.
 
 x-applypack-build: &applypack-build
-  context: https://github.com/applypack/applypack.git#v2.9.4
+  context: https://github.com/applypack/applypack.git#v2.47.0
 
 x-applypack-common: &applypack-common
-  image: applypack:v2.9.4
+  image: applypack:v2.47.0
   build: *applypack-build
   restart: always
   depends_on:
