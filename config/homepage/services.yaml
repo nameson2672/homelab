@@ -84,3 +84,11 @@
         icon: lazylibrarian.png
         href: https://lazylibrarian.homelab
         description: Book & Audiobook Automation
+
+- Career:
+    - ApplyPack:
+        icon: mdi-briefcase-search
+        href: https://applypack.homelab
+        description: Job Search Tracker
+        server: my-docker
+        container: applypack-web

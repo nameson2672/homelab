@@ -27,6 +27,7 @@ jobs:
           deploy_media=false
           deploy_downloaders=false
           deploy_entertainment=false
+          deploy_applypack=false
           run_folders=false
 
           echo "$CHANGED" | grep -q "stacks/portainer.yml"     && deploy_portainer=true     || true
@@ -34,6 +35,7 @@ jobs:
           echo "$CHANGED" | grep -q "stacks/media.yml"         && deploy_media=true         || true
           echo "$CHANGED" | grep -q "stacks/downloaders.yml"   && deploy_downloaders=true   || true
           echo "$CHANGED" | grep -q "stacks/entertainment.yml" && deploy_entertainment=true || true
+          echo "$CHANGED" | grep -q "stacks/applypack.yml"     && deploy_applypack=true     || true
           echo "$CHANGED" | grep -q "scripts/folders.sh"       && run_folders=true          || true
 
           echo "deploy_portainer=$deploy_portainer"         >> "$GITHUB_OUTPUT"
@@ -41,6 +43,7 @@ jobs:
           echo "deploy_media=$deploy_media"                 >> "$GITHUB_OUTPUT"
           echo "deploy_downloaders=$deploy_downloaders"     >> "$GITHUB_OUTPUT"
           echo "deploy_entertainment=$deploy_entertainment" >> "$GITHUB_OUTPUT"
+          echo "deploy_applypack=$deploy_applypack"         >> "$GITHUB_OUTPUT"
           echo "run_folders=$run_folders"                   >> "$GITHUB_OUTPUT"
 
       - name: Set up SSH agent
@@ -61,6 +64,7 @@ jobs:
           DEPLOY_MEDIA: ${{ steps.changes.outputs.deploy_media }}
           DEPLOY_DOWNLOADERS: ${{ steps.changes.outputs.deploy_downloaders }}
           DEPLOY_ENTERTAINMENT: ${{ steps.changes.outputs.deploy_entertainment }}
+          DEPLOY_APPLYPACK: ${{ steps.changes.outputs.deploy_applypack }}
           RUN_FOLDERS: ${{ steps.changes.outputs.run_folders }}
         run: |
           ssh "$SERVER_USER@$SERVER_IP" bash << EOF
@@ -107,6 +111,16 @@ jobs:
               deployed_any=true
             fi
 
+            if [ "$DEPLOY_APPLYPACK" = "true" ]; then
+              echo "--- Redeploying applypack (builds from GitHub tag) ---"
+              if [ ! -f /home/docker/applypack/applypack.env ]; then
+                echo "❌ /home/docker/applypack/applypack.env missing — copy config/applypack/applypack.env.example there first"
+                exit 1
+              fi
+              docker compose -f stacks/applypack.yml up -d --build
+              deployed_any=true
+            fi
+
             if [ "\$deployed_any" = "false" ]; then
               echo "No stack changes detected, skipping redeploy"
             else
@@ -122,4 +136,5 @@ jobs:
           echo "Media:         ${{ steps.changes.outputs.deploy_media }}"
           echo "Downloaders:   ${{ steps.changes.outputs.deploy_downloaders }}"
           echo "Entertainment: ${{ steps.changes.outputs.deploy_entertainment }}"
+          echo "ApplyPack:     ${{ steps.changes.outputs.deploy_applypack }}"
           echo "folders.sh:    ${{ steps.changes.outputs.run_folders }}"

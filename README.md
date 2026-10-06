@@ -55,6 +55,7 @@ A self-hosted media and automation stack running on Ubuntu Server, managed via D
 | Sonarr | http://IP:8989 | sonarr.homelab | TV show automation |
 | Readarr | http://IP:8787 | readarr.homelab | Book & audiobook automation |
 | Shelfarr | http://IP:8084 | shelfarr.homelab | Book downloader |
+| ApplyPack | http://127.0.0.1:4747 (server only) | applypack.homelab | Job search tracker — see [Deploying ApplyPack](#deploying-applypack) |
 
 ---
 
@@ -189,3 +190,36 @@ After all containers are running, connect them through their web UIs using conta
 | Sonarr | qBittorrent | `qbittorrent` | `8080` |
 | Readarr | qBittorrent | `qbittorrent` | `8080` |
 | Radarr / Sonarr / Readarr | Prowlarr | `prowlarr` | `9696` (use Prowlarr API key) |
+
+---
+
+## Deploying ApplyPack
+
+ApplyPack has no published image, so `stacks/applypack.yml` builds it from a pinned
+GitHub tag. It runs three containers: `applypack-db` (Postgres 16, private network only),
+`applypack-worker` (scheduled job fetching) and `applypack-web` (dashboard).
+
+First time, on the server:
+
+```bash
+cd ~/homelab && git pull
+bash scripts/folders.sh
+cp config/applypack/applypack.env.example /home/docker/applypack/applypack.env
+nano /home/docker/applypack/applypack.env      # DB password (in 2 places), WEB_BASIC_AUTH, AI key
+chmod 600 /home/docker/applypack/applypack.env
+docker compose -f stacks/applypack.yml up -d --build   # first build takes a few minutes
+docker compose -f stacks/applypack.yml ps              # wait for (healthy)
+```
+
+Then open https://applypack.homelab (sign in with `WEB_BASIC_AUTH`) and finish `/welcome`.
+
+**Upgrade:** change the tag in `stacks/applypack.yml` (both the `#vX.Y.Z` build context and the
+`image:` tag), push to `main` — Actions rebuilds it. Migrations run on start.
+
+**Backup** (the dump contains your resumes and any API keys pasted into the UI — keep it private):
+
+```bash
+docker exec applypack-db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' | gzip > ~/applypack-$(date +%F).sql.gz
+```
+
+Data lives in the `applypack-pgdata` Docker volume; `docker compose down -v` deletes it.

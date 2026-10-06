@@ -16,3 +16,6 @@ layout:
   Automation:
     style: row
     columns: 3
+  Career:
+    style: row
+    columns: 1

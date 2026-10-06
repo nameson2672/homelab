@@ -23,9 +23,12 @@ mkdir -p /home/docker/lazylibrarian
 mkdir -p /home/docker/jellyfin/config
 mkdir -p /home/docker/jellyfin/cache
 mkdir -p /home/docker/homepage
+mkdir -p /home/docker/applypack
 
 echo "Setting permissions..."
 sudo chown -R 1000:1000 /home/media
 sudo chown -R 1000:1000 /home/docker
+# applypack.env holds API keys and the DB password
+[ -f /home/docker/applypack/applypack.env ] && chmod 600 /home/docker/applypack/applypack.env || true
 
 echo "✅ All folders created successfully"

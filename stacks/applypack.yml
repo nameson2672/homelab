@@ -1,0 +1,99 @@
+# ApplyPack — self-hosted job search tracker (https://github.com/applypack/applypack)
+# No published image upstream, so compose builds it straight from a pinned Git tag.
+# To upgrade: bump APPLYPACK_REF below (and the image tag), commit, push.
+#
+# Secrets live on the server only, in /home/docker/applypack/applypack.env
+# (template: config/applypack/applypack.env.example). Never commit that file.
+
+x-applypack-build: &applypack-build
+  context: https://github.com/applypack/applypack.git#v2.9.4
+
+x-applypack-common: &applypack-common
+  image: applypack:v2.9.4
+  build: *applypack-build
+  restart: always
+  depends_on:
+    applypack-db:
+      condition: service_healthy
+  env_file:
+    - /home/docker/applypack/applypack.env
+  # Lets ApplyPack reach Ollama / LM Studio running on the server itself
+  # at http://host.docker.internal:<port>
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  networks:
+    - applypack-internal
+    - bookstack
+
+services:
+  applypack-db:
+    image: postgres:16-alpine
+    container_name: applypack-db
+    restart: always
+    env_file:
+      - /home/docker/applypack/applypack.env
+    volumes:
+      # Named volume (not a /home/docker bind mount) so folders.sh's
+      # `chown -R 1000:1000 /home/docker` can't break Postgres' file ownership.
+      - applypack-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    # Database stays off the shared bookstack network and is never published.
+    networks:
+      - applypack-internal
+
+  applypack-worker:
+    <<: *applypack-common
+    container_name: applypack-worker
+    environment:
+      - NODE_ENV=production
+      - HEARTBEAT_FILE=/tmp/applypack-worker.heartbeat
+    healthcheck:
+      test: ["CMD", "node", "dist/scripts/health-check.js", "worker"]
+      interval: 60s
+      timeout: 10s
+      start_period: 120s
+      retries: 3
+
+  applypack-web:
+    <<: *applypack-common
+    container_name: applypack-web
+    command: ["node", "dist/web/server.js"]
+    depends_on:
+      applypack-db:
+        condition: service_healthy
+      applypack-worker:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+      - WEB_HOST=0.0.0.0
+      - WEB_PORT=4747
+    ports:
+      # Loopback only — reach it via Traefik (applypack.homelab) or an SSH tunnel.
+      - "127.0.0.1:4747:4747"
+    healthcheck:
+      test: ["CMD", "node", "dist/scripts/health-check.js", "web"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=bookstack"
+      - "traefik.http.routers.applypack.rule=Host(`applypack.homelab`)"
+      - "traefik.http.routers.applypack.entrypoints=websecure"
+      - "traefik.http.routers.applypack.tls=true"
+      - "traefik.http.services.applypack.loadbalancer.server.port=4747"
+
+volumes:
+  applypack-pgdata:
+    name: applypack-pgdata
+
+networks:
+  applypack-internal:
+    name: applypack-internal
+  bookstack:
+    external: true
